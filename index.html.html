@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MarGGPT - Teman Digital Hati</title>
+<style>
+:root{
+  --black:#02040a; --bg:#050a16; --bg2:#08101f; --panel:#0c1630; --panel2:#101d40;
+  --line:#1b2a52; --text:#e8eefc; --muted:#8fa0c8; --blue:#3b82f6; --blue2:#60a5fa;
+  --blue3:#1d4ed8; --gold:#d6b25e; --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',Inter,system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,textarea,select{font:inherit;color:var(--text)}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#1c2c58;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+
+/* Sidebar */
+.sidebar{width:270px;flex-shrink:0;background:linear-gradient(180deg,var(--black) 0%,#050c20 100%);border-right:1px solid #0f1a38;display:flex;flex-direction:column;padding:22px 14px;position:relative;z-index:30;overflow:hidden}
+.sidebar::after{content:"";position:absolute;left:-60px;bottom:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.28),transparent 70%);pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 22px}
+.brand svg{width:46px;height:46px;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(59,130,246,.55))}
+.brand h1{font-size:20px;font-weight:800;letter-spacing:.2px}
+.brand h1 b{background:linear-gradient(90deg,#60a5fa,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:1.6px;margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:12px;color:#b6c4e8;font-size:15px;text-align:left;transition:.2s;position:relative}
+.nav button svg{width:21px;height:21px;flex-shrink:0}
+.nav button:hover{background:rgba(59,130,246,.1);color:#fff}
+.nav button.active{background:linear-gradient(135deg,var(--blue3),var(--blue));color:#fff;box-shadow:0 8px 22px rgba(37,99,235,.35)}
+.side-quote{margin-top:auto;padding:18px 10px 10px;font-family:Georgia,'Times New Roman',serif;font-style:italic;color:#c9d6f5;font-size:16px;line-height:1.5;position:relative;z-index:1}
+.side-quote i{display:block;width:120px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:10px}
+
+/* Main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;background:radial-gradient(1200px 500px at 70% -10%,rgba(37,99,235,.14),transparent 60%),var(--bg)}
+.topbar{height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid #0f1a38;background:rgba(2,4,10,.55);backdrop-filter:blur(8px)}
+.topbar .left{display:flex;align-items:center;gap:14px}
+.burger{display:none;width:40px;height:40px;border-radius:10px;background:var(--panel);align-items:center;justify-content:center}
+.burger svg{width:22px;height:22px}
+.page-title{font-size:16px;font-weight:600;color:#cfdbff}
+.badge-mode{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(214,178,94,.08);border:1px solid rgba(214,178,94,.35);color:var(--gold);font-size:12.5px;font-weight:600}
+.badge-mode i{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.content{flex:1;overflow-y:auto;padding:26px 28px 0;display:flex;flex-direction:column}
+.view{display:none;flex:1}
+.view.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+footer{margin:26px -28px 0;padding:18px 28px;background:var(--black);border-top:1px solid #0f1a38;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+footer span:last-child{font-style:italic;color:#aebde6}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:42px 44px;background:linear-gradient(120deg,#02040a 0%,#07122c 45%,#0b2260 100%);border:1px solid #162750;min-height:250px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.hero::before{content:"";position:absolute;right:-80px;top:-100px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.45),transparent 65%)}
+.hero::after{content:"";position:absolute;right:140px;bottom:-140px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(96,165,250,.25);box-shadow:0 0 0 40px rgba(96,165,250,.04),0 0 0 90px rgba(96,165,250,.03)}
+.hero>*{position:relative;z-index:1}
+.hero .hi{font-family:Georgia,serif;font-style:italic;font-size:24px;color:#cfdcff}
+.hero h2{font-size:54px;font-weight:800;line-height:1.05;letter-spacing:-1px;margin:4px 0 10px}
+.hero h2 span{background:linear-gradient(90deg,#fff,#7db3ff 55%,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:#b9c7ee;max-width:520px;line-height:1.55;font-size:15px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 24px;border-radius:12px;font-weight:600;font-size:15px;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--blue3),var(--blue));color:#fff;box-shadow:0 10px 26px rgba(37,99,235,.4);margin-top:20px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(37,99,235,.55)}
+.btn-ghost{background:var(--panel2);border:1px solid var(--line);color:#cfdbff}
+.btn-ghost:hover{border-color:var(--blue)}
+.btn-danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.4);color:var(--bad)}
+.btn svg{width:18px;height:18px}
+.hero-quote{max-width:300px;text-align:right;font-family:Georgia,serif;font-style:italic;font-size:26px;line-height:1.3;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.5)}
+.hero-quote em{color:var(--gold)}
+.hero-quote i{display:block;margin:12px 0 0 auto;width:140px;height:4px;border-radius:4px;background:linear-gradient(90deg,transparent,var(--gold))}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
+.stat{display:flex;align-items:center;gap:16px;padding:20px;border-radius:var(--radius);background:linear-gradient(145deg,var(--panel),#0a1228);border:1px solid var(--line);transition:.2s}
+.stat:hover{transform:translateY(-3px);border-color:#2a4180}
+.stat .ico{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat .ico svg{width:28px;height:28px}
+.stat .lbl{font-size:13.5px;color:var(--muted)}
+.stat .num{font-size:32px;font-weight:800;line-height:1.1}
+.stat .sub{font-size:12px;color:#7385b3}
+.c-blue{background:rgba(59,130,246,.16);color:var(--blue2)}.c-gold{background:rgba(214,178,94,.15);color:var(--gold)}
+.c-green{background:rgba(52,211,153,.14);color:var(--ok)}.c-red{background:rgba(248,113,113,.14);color:var(--bad)}
+
+/* Panels */
+.grid3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:16px}
+.panel{background:linear-gradient(145deg,var(--panel),#0a1228);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.panel h3{display:flex;align-items:center;gap:10px;font-size:16px;margin-bottom:14px}
+.panel h3 svg{width:20px;height:20px;color:var(--blue2)}
+.q-list{display:flex;flex-direction:column;gap:8px}
+.q-item{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 14px;border-radius:12px;background:rgba(59,130,246,.07);border:1px solid transparent;font-size:14px;color:#d6e0fb;transition:.2s}
+.q-item:hover{border-color:var(--blue);background:rgba(59,130,246,.15)}
+.q-item svg{width:16px;height:16px;color:var(--blue2);flex-shrink:0}
+.cat-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 14px;border-radius:999px;background:rgba(59,130,246,.1);border:1px solid #23376b;color:#cfdcff;font-size:13.5px;transition:.2s}
+.chip:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip b{color:var(--gold);margin-left:6px}
+.affirm{margin-top:16px;padding:16px;border-radius:12px;background:linear-gradient(135deg,rgba(214,178,94,.1),rgba(214,178,94,.02));border:1px solid rgba(214,178,94,.3);font-family:Georgia,serif;font-style:italic;line-height:1.5;color:#f0dfb2;font-size:15px}
+.help-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.help-list li{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:12px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);font-size:14px}
+.help-list li b{color:#fff;white-space:nowrap}
+.help-list li span{color:#c5d0ee}
+.note{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+
+/* Chat */
+.chat-wrap{height:calc(100vh - 64px - 26px - 62px);min-height:420px;display:flex;flex-direction:column;border-radius:20px;border:1px solid var(--line);background:linear-gradient(180deg,#0a1330,#070d20);overflow:hidden}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);background:rgba(2,4,10,.4)}
+.chat-head .who{display:flex;align-items:center;gap:14px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue3),var(--blue2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px rgba(59,130,246,.5)}
+.avatar svg{width:22px;height:22px;color:#fff}
+.who b{display:block;font-size:16px}.who small{color:var(--ok);font-size:12.5px}
+.msgs{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:12px;max-width:82%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.bubble{padding:14px 18px;border-radius:18px;line-height:1.6;font-size:15px;word-wrap:break-word}
+.msg.bot .bubble{background:var(--panel2);border:1px solid var(--line);border-top-left-radius:6px}
+.msg.user .bubble{background:linear-gradient(135deg,var(--blue3),var(--blue));border-top-right-radius:6px;box-shadow:0 8px 20px rgba(37,99,235,.3)}
+.meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:11.5px;color:var(--muted)}
+.tag{padding:3px 9px;border-radius:999px;background:rgba(214,178,94,.12);border:1px solid rgba(214,178,94,.3);color:var(--gold);font-weight:600}
+.src{margin-top:10px;font-size:11.5px;color:#6f81ad;border-top:1px dashed #22346a;padding-top:8px}
+.rel{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.rel .chip{font-size:12.5px;padding:7px 12px;text-align:left}
+.crisis{border-color:rgba(248,113,113,.5)!important;background:linear-gradient(145deg,rgba(248,113,113,.12),var(--panel2))!important}
+.typing{display:flex;gap:5px;padding:4px 2px}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--blue2);animation:bounce 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.chat-input{padding:16px 20px;border-top:1px solid var(--line);background:rgba(2,4,10,.5)}
+.start-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px}
+.start-chips .chip{white-space:nowrap}
+.input-row{display:flex;gap:10px}
+.input-row input{flex:1;padding:14px 18px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);outline:none;font-size:15px}
+.input-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.send{width:52px;border-radius:14px;background:linear-gradient(135deg,var(--blue3),var(--blue));display:flex;align-items:center;justify-content:center;transition:.2s}
+.send:hover{transform:scale(1.05)}.send svg{width:22px;height:22px}
+
+/* Topics */
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.page-head h2{font-size:26px}.page-head p{color:var(--muted);margin-top:4px;font-size:14px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:20px}
+.cat-card{text-align:left;padding:20px;border-radius:var(--radius);background:linear-gradient(145deg,var(--panel),#0a1228);border:1px solid var(--line);transition:.2s}
+.cat-card:hover,.cat-card.active{border-color:var(--blue);transform:translateY(-3px);box-shadow:0 10px 26px rgba(37,99,235,.2)}
+.cat-card b{display:block;font-size:17px;margin-bottom:4px}.cat-card span{color:var(--gold);font-size:13px}
+
+/* Admin */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.toolbar input[type=search]{flex:1;min-width:200px;padding:12px 16px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);outline:none}
+.toolbar input[type=search]:focus{border-color:var(--blue)}
+.btn.sm{padding:10px 16px;font-size:14px;margin:0}
+.table-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:#091128;text-align:left;padding:13px 16px;color:var(--muted);font-weight:600;font-size:13px}
+td{padding:13px 16px;border-top:1px solid #15244a;vertical-align:top}
+td .tag{white-space:nowrap}
+.act{display:flex;gap:6px}
+.act button{padding:7px 12px;border-radius:9px;font-size:13px;background:var(--panel2);border:1px solid var(--line)}
+.act button:hover{border-color:var(--blue)}.act .del:hover{border-color:var(--bad);color:var(--bad)}
+.unans{margin-bottom:20px}
+.unans .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);margin-bottom:8px;font-size:14px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+dialog{margin:auto;border:1px solid var(--line);border-radius:18px;background:#0a1330;color:var(--text);width:min(640px,94vw);padding:0}
+dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(3px)}
+.dlg{padding:24px;display:flex;flex-direction:column;gap:14px}
+.dlg h3{font-size:20px}
+.dlg label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.dlg input,.dlg textarea,.dlg select{padding:12px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);outline:none;resize:vertical}
+.dlg input:focus,.dlg textarea:focus{border-color:var(--blue)}
+.dlg .btns{display:flex;justify-content:flex-end;gap:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--panel2);border:1px solid var(--blue);padding:12px 22px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:25}
+
+@media (max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}.hero-quote{display:none}}
+@media (max-width:820px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:.3s}
+  .sidebar.open{transform:none}.overlay.show{display:block}
+  .burger{display:flex}.content{padding:18px 16px 0}footer{margin:22px -16px 0;padding:16px}
+  .topbar{padding:0 16px}.badge-mode span{display:none}
+  .hero{padding:28px 22px}.hero h2{font-size:38px}.hero .hi{font-size:19px}
+  .grid3{grid-template-columns:1fr}.msg{max-width:94%}
+  .chat-wrap{height:calc(100vh - 64px - 18px - 70px)}
+  th:nth-child(3),td:nth-child(3){display:none}
+}
+@media (max-width:480px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg viewBox="0 0 48 48" fill="none"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#93c5fd"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs><path d="M24 3 42 10v13c0 11-7.5 18.5-18 22C13.500 41.500 6 34 6 23V10L24 3Z" fill="#050c20" stroke="url(#lg)" stroke-width="2.200"/><path d="M24 33s-8.500-5.300-8.500-11.200A4.800 4.800 0 0 1 24 19.200a4.800 4.800 0 0 1 8.500 2.600C32.500 27.700 24 33 24 33Z" fill="url(#lg)"/></svg>
+    <div><h1>Mar<b>GGPT</b></h1><small>TEMAN DIGITAL HATI</small></div>
+  </div>
+  <nav class="nav" id="nav">
+    <button data-view="home" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Laman Utama</button>
+    <button data-view="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.600 7.100L4 20l1-4.600A8 8 0 1 1 21 12Z"/></svg>Sembang MarGGPT</button>
+    <button data-view="topics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5a2 2 0 0 1 2-2h6v18H4a2 2 0 0 1-2-2V5Z"/><path d="M22 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 0 2-2V5Z"/></svg>Topik Soalan</button>
+    <button data-view="admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.700 3.600 3 8 3s8-1.300 8-3V5"/><path d="M4 12c0 1.700 3.600 3 8 3s8-1.300 8-3"/></svg>Pangkalan Data</button>
+    <button data-view="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.900v3a2 2 0 0 1-2.200 2 19.800 19.800 0 0 1-8.600-3.100 19.500 19.500 0 0 1-6-6A19.800 19.800 0 0 1 2.100 4.200 2 2 0 0 1 4.100 2h3a2 2 0 0 1 2 1.700c.1 1 .4 1.900.7 2.800a2 2 0 0 1-.5 2.100L8.100 9.900a16 16 0 0 0 6 6l1.300-1.300a2 2 0 0 1 2.100-.4c.9.300 1.800.6 2.800.7a2 2 0 0 1 1.700 2Z"/></svg>Talian Bantuan</button>
+  </nav>
+  <div class="side-quote">"Setiap luka ada masanya untuk sembuh. Kamu tidak keseorangan."<i></i></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="left">
+      <button class="burger" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="page-title" id="pageTitle">Laman Utama</div>
+    </div>
+    <div class="badge-mode"><i></i><span>Mod: Jawapan Pangkalan Data Sahaja</span></div>
+  </div>
+
+  <div class="content" id="content">
+
+    <!-- HOME -->
+    <section class="view active" id="view-home">
+      <div class="hero">
+        <div>
+          <div class="hi">Selamat Datang ke</div>
+          <h2><span>MarGGPT</span></h2>
+          <p>Teman digital untuk hati yang sedang belajar sembuh. Tanya tentang perasaan, putus cinta dan cara untuk bangkit. Semua jawapan datang daripada pangkalan data yang disediakan, bukan dikarang sesuka hati.</p>
+          <button class="btn btn-primary" data-go="chat">Mulakan Sembang
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </div>
+        <div class="hero-quote">Patah hati bukan <em>pengakhiran</em>, ia permulaan untuk kenal diri sendiri.<i></i></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="ico c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.700 3.600 3 8 3s8-1.300 8-3V5"/></svg></div><div><div class="lbl">Jumlah Soalan</div><div class="num" id="sTotal">0</div><div class="sub">(Dalam pangkalan data)</div></div></div>
+        <div class="stat"><div class="ico c-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/></svg></div><div><div class="lbl">Kategori Topik</div><div class="num" id="sCats">0</div><div class="sub">(Topik tersedia)</div></div></div>
+        <div class="stat"><div class="ico c-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></div><div><div class="lbl">Soalan Dijawab</div><div class="num" id="sAns">0</div><div class="sub">(Sepanjang masa)</div></div></div>
+        <div class="stat"><div class="ico c-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></div><div><div class="lbl">Tiada Maklumat</div><div class="num" id="sUn">0</div><div class="sub">(Menunggu jawapan admin)</div></div></div>
+      </div>
+
+      <div class="grid3">
+        <div class="panel">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.600 7.100L4 20l1-4.600A8 8 0 1 1 21 12Z"/></svg>Soalan Popular</h3>
+          <div class="q-list" id="popular"></div>
+        </div>
+        <div class="panel">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5a2 2 0 0 1 2-2h6v18H4a2 2 0 0 1-2-2V5Z"/><path d="M22 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 0 2-2V5Z"/></svg>Kategori Topik</h3>
+          <div class="cat-chips" id="homeCats"></div>
+          <div class="affirm" id="affirm"></div>
+        </div>
+        <div class="panel">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.900v3a2 2 0 0 1-2.200 2 19.800 19.800 0 0 1-8.600-3.100 19.500 19.500 0 0 1-6-6A19.800 19.800 0 0 1 2.100 4.200 2 2 0 0 1 4.100 2h3a2 2 0 0 1 2 1.700c.1 1 .4 1.900.7 2.800a2 2 0 0 1-.5 2.100L8.100 9.900a16 16 0 0 0 6 6l1.300-1.300a2 2 0 0 1 2.100-.4c.9.300 1.800.6 2.800.7a2 2 0 0 1 1.700 2Z"/></svg>Perlukan Bantuan Segera?</h3>
+          <ul class="help-list">
+            <li><span>Talian Kasih</span><b>15999</b></li>
+            <li><span>Befrienders KL (24 jam)</span><b>03-7627 2929</b></li>
+            <li><span>Talian HEAL</span><b>15555</b></li>
+            <li><span>Kecemasan</span><b>999</b></li>
+          </ul>
+          <p class="note">MarGGPT bukan pengganti kaunselor atau pakar profesional. Jika keadaan terasa terlalu berat, sila hubungi mereka.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="view" id="view-chat">
+      <div class="chat-wrap">
+        <div class="chat-head">
+          <div class="who">
+            <div class="avatar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5-8-11a4.500 4.500 0 0 1 8-2.800A4.500 4.500 0 0 1 20 10c0 6-8 11-8 11Z"/></svg></div>
+            <div><b>MarGGPT</b><small>● Sedia mendengar</small></div>
+          </div>
+          <button class="btn btn-ghost sm" id="clearChat">Kosongkan Sembang</button>
+        </div>
+        <div class="msgs" id="msgs"></div>
+        <div class="chat-input">
+          <div class="start-chips" id="startChips"></div>
+          <form class="input-row" id="chatForm" autocomplete="off">
+            <input id="chatInput" placeholder="Taip soalan atau perasaan awak di sini..." maxlength="300">
+            <button class="send" type="submit" aria-label="Hantar"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOPICS -->
+    <section class="view" id="view-topics">
+      <div class="page-head"><div><h2>Topik Soalan</h2><p>Pilih kategori untuk lihat soalan yang ada dalam pangkalan data.</p></div></div>
+      <div class="cat-grid" id="catGrid"></div>
+      <div class="panel" id="catQs" style="display:none"><h3 id="catQsTitle"></h3><div class="q-list" id="catQsList"></div></div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="view" id="view-admin">
+      <div class="page-head"><div><h2>Pangkalan Data</h2><p>Tambah, edit atau padam soalan dan jawapan. MarGGPT hanya akan menjawab daripada senarai ini.</p></div></div>
+      <div class="panel unans" id="unansBox" style="display:none">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.100 9a3 3 0 0 1 5.800 1c0 2-3 3-3 3M12 17h.01"/></svg>Soalan Belum Dijawab</h3>
+        <div id="unansList"></div>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="adminSearch" placeholder="Cari soalan, kategori atau jawapan...">
+        <button class="btn btn-primary sm" id="addBtn">+ Tambah Soalan</button>
+        <button class="btn btn-ghost sm" id="exportBtn">Eksport</button>
+        <button class="btn btn-ghost sm" id="importBtn">Import</button>
+        <button class="btn btn-danger sm" id="resetBtn">Set Semula</button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th style="width:130px">Kategori</th><th>Soalan</th><th>Kata Kunci</th><th style="width:150px">Tindakan</th></tr></thead>
+        <tbody id="adminBody"></tbody>
+      </table></div>
+    </section>
+
+    <!-- HELP -->
+    <section class="view" id="view-help">
+      <div class="page-head"><div><h2>Talian Bantuan</h2><p>Kamu layak mendapat sokongan. Hubungi mereka bila-bila masa.</p></div></div>
+      <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="panel"><h3>Talian Kasih</h3><div style="font-size:34px;font-weight:800">15999</div><p class="note">Talian sokongan dan kaunseling kebangsaan.</p></div>
+        <div class="panel"><h3>Befrienders KL</h3><div style="font-size:34px;font-weight:800">03-7627 2929</div><p class="note">Sokongan emosi dan pencegahan bunuh diri, 24 jam.</p></div>
+        <div class="panel"><h3>Talian HEAL</h3><div style="font-size:34px;font-weight:800">15555</div><p class="note">Sokongan kesihatan mental oleh Kementerian Kesihatan.</p></div>
+        <div class="panel"><h3>Kecemasan</h3><div style="font-size:34px;font-weight:800;color:var(--bad)">999</div><p class="note">Jika nyawa dalam bahaya, hubungi segera.</p></div>
+      </div>
+      <p class="note" style="margin-top:16px">Sila semak nombor di atas dari semasa ke semasa kerana ia mungkin berubah. Orang tersayang, kawan atau kaunselor sekolah juga boleh menjadi tempat bergantung.</p>
+    </section>
+
+    <footer><span>© <span id="yr"></span> MarGGPT. Hak Cipta Terpelihara. Bukan pengganti nasihat profesional.</span><span>Tenang · Sembuh · Bangkit</span></footer>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form class="dlg" id="dlgForm" method="dialog">
+    <h3 id="dlgTitle">Tambah Soalan</h3>
+    <label>Kategori<input id="fCat" list="catList" required placeholder="cth: Putus Cinta"><datalist id="catList"></datalist></label>
+    <label>Soalan<input id="fQ" required placeholder="cth: Macam mana nak lupakan bekas kekasih?"></label>
+    <label>Kata kunci (asingkan dengan koma)<input id="fKw" placeholder="cth: lupakan, bekas, ex, move on"></label>
+    <label>Jawapan<textarea id="fA" rows="7" required placeholder="Tulis jawapan. Gunakan • untuk senarai poin."></textarea></label>
+    <div class="btns"><button type="button" class="btn btn-ghost sm" id="dlgCancel">Batal</button><button type="submit" class="btn btn-primary sm" style="margin-top:0">Simpan</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DATA ============ */
+const KEY = 'marggpt_db_v1', STAT = 'marggpt_stats_v1', UNK = 'marggpt_unans_v1';
+function E(cat,q,kw,a,pop){return {cat,q,kw,a,pop:!!pop}}
+const SEED = [
+E("Umum","Hai, assalamualaikum, apa khabar?",["hai","hello","helo","hi","salam","assalamualaikum","khabar","selamat"],
+`Waalaikumussalam dan hai! Saya MarGGPT, teman digital untuk soalan tentang perasaan, putus cinta dan cara untuk sembuh.
+Cuba tanya sesuatu, contohnya: 'Macam mana nak lupakan bekas kekasih?'`),
+E("Umum","Siapa awak? Apa itu MarGGPT?",["siapa","marggpt","bot","ai","apa","kenal","perkenal"],
+`Saya MarGGPT, sistem sembang yang menjawab hanya daripada pangkalan data soalan dan jawapan tentang perasaan, putus cinta dan penyembuhan.
+Saya tidak mereka jawapan sendiri, jadi kalau sesuatu tiada dalam sistem saya akan berterus terang. Saya bukan pengganti kaunselor profesional.`),
+E("Umum","Terima kasih",["terima","kasih","thanks","thank","tq","tqvm"],
+`Sama-sama. Jaga diri baik-baik, dan ingat, sembuh itu proses, bukan perlumbaan. Kalau perlu, saya ada di sini.`),
+E("Putus Cinta","Saya baru putus cinta, apa yang patut saya buat?",["putus","cinta","baru","patut","buat","mula","langkah pertama"],
+`Maaf awak sedang lalui ini. Untuk beberapa hari pertama, fokus pada perkara asas:
+• Benarkan diri rasa sedih. Tak perlu pura-pura kuat.
+• Makan, minum dan tidur secukupnya.
+• Cerita pada seorang yang awak percaya.
+• Elakkan keputusan besar atau hantar mesej ketika emosi memuncak.
+Awak tak perlu rasa okey dengan segera.`,true),
+E("Putus Cinta","Kenapa sakit sangat bila putus cinta?",["sakit","kenapa","perit","pedih","putus","hati","otak","sedih","teruk"],
+`Rasa sakit itu nyata. Otak kita terikat dengan orang yang rapat, jadi bila hubungan tamat, ia seperti 'tarikan' (withdrawal) yang membuat kita rindu, resah dan sukar fokus.
+Hilang rutin, harapan dan masa depan yang dirancang juga satu kehilangan sebenar. Ini bukan tanda awak lemah, ia tanda awak pernah sayang dengan sungguh-sungguh.`,true),
+E("Putus Cinta","Kenapa dia tak cintakan saya lagi?",["kenapa","tak","cinta","berubah","bosan","hilang","perasaan","sayang","lagi"],
+`Kadang-kadang perasaan orang berubah kerana banyak sebab: masa, tekanan, jarak, atau mereka sendiri belum bersedia. Itu tidak semestinya bermakna awak tidak cukup baik.
+Awak mungkin tak akan dapat jawapan yang memuaskan. Yang boleh awak kawal ialah bagaimana awak jaga diri dan melangkah selepas ini.`),
+E("Putus Cinta","Macam mana nak lupakan bekas kekasih?",["lupakan","lupa","bekas","ex","kekasih","move","on","lepaskan","melupakan"],
+`Melupakan bukan dengan memadam ingatan, tetapi dengan mengurangkan kuasanya ke atas awak:
+• Kurangkan 'pencetus': padam atau senyapkan chat, gambar dan notifikasi.
+• Isi masa dengan rutin baharu: senaman, hobi, kawan.
+• Bila teringat, beri nama pada perasaan itu ('saya rindu') lalu alihkan perhatian.
+• Bersabar. Rindu akan makin jarang datang dari masa ke masa.`,true),
+E("Putus Cinta","Berapa lama masa diperlukan untuk sembuh selepas putus cinta?",["berapa","lama","masa","sembuh","pulih","tempoh","bila","hari","bulan"],
+`Tiada jadual yang sama untuk semua orang. Ada yang beberapa minggu, ada yang berbulan-bulan, bergantung pada lamanya hubungan, cara ia berakhir dan sokongan yang awak ada.
+Tanda kemajuan: hari-hari baik makin bertambah, walaupun hari buruk masih datang sesekali. Itu normal.`,true),
+E("Putus Cinta","Patutkah saya hubungi bekas kekasih?",["hubungi","call","mesej","text","message","bekas","contact","whatsapp","telefon","chat","dm"],
+`Selalunya lebih baik jangan, terutama dalam beberapa minggu awal. Menghubungi semula sering membuka luka dan melambatkan pemulihan.
+Tanya diri: 'Apa yang saya harap daripada mesej ini?' Kalau jawapannya mahu rasa lega seketika atau berharap kembali, beri diri masa. Tulis dalam nota, jangan hantar.`,true),
+E("Putus Cinta","Patutkah saya stalk media sosial dia?",["stalk","instagram","media","sosial","tengok","status","story","ig","tiktok","intip","unfollow","block","mute"],
+`Semak profil dia berulang kali biasanya menambah sakit dan memberi harapan palsu. Cuba senyapkan (mute) atau sekat (block) untuk sementara, bukan kerana benci tetapi untuk beri ruang awak sembuh.
+Awak boleh pilih untuk berteman semula bila hati sudah tenang.`),
+E("Putus Cinta","Dia curang, macam mana nak terima?",["curang","khianat","tipu","kecewa","setia","menipu","pengkhianatan","duakan","skandal","kantoi"],
+`Dikhianati sangat menyakitkan, dan kemarahan serta kekeliruan awak wajar. Kecurangan adalah pilihan dia, bukan kegagalan awak.
+• Beri masa untuk berduka, jangan paksa diri 'okey'.
+• Elakkan menyalahkan diri sendiri.
+• Jaga kesihatan diri, dan buat ujian kesihatan jika perlu.
+• Bercakap dengan kaunselor boleh sangat membantu.`),
+E("Putus Cinta","Saya yang tinggalkan dia tapi rasa bersalah",["tinggalkan","bersalah","salah","putuskan","saya","yang","akhiri"],
+`Rasa bersalah selalu datang walaupun keputusan itu betul. Ia tidak bermakna awak buat silap, ia bermakna awak masih ada hati dan empati.
+Mengakhiri hubungan yang tidak lagi sihat adalah keputusan yang sukar tetapi sah. Awak boleh bersikap baik tanpa terus bertahan.`),
+E("Putus Cinta","Dia tinggalkan saya tanpa sebab atau ghosting",["ghosting","ghost","menghilang","tinggalkan","tanpa","sebab","senyap","hilang","block","tak","balas"],
+`Ditinggalkan tanpa penjelasan memang membingungkan dan menyakitkan. Ghosting lebih mencerminkan cara dia menangani konflik daripada nilai awak.
+Awak mungkin tak dapat penutup (closure) daripada dia. Cuba cipta penutup sendiri: tulis surat yang tak dihantar, dan terima bahawa jawapan mungkin tak akan datang.`),
+E("Putus Cinta","Patutkah saya beri peluang kedua dan kembali bersama?",["peluang","kedua","kembali","balik","rujuk","bersama","semula","getback","bercinta"],
+`Soalan penting sebelum kembali:
+• Apa yang menyebabkan perpisahan, dan sudah berubahkah?
+• Adakah kedua-duanya mahu berusaha, bukan satu pihak sahaja?
+• Adakah awak kembali kerana sayang, atau kerana takut sunyi?
+Kalau masalah asas tak berubah, corak lama biasanya berulang. Beri diri masa untuk berfikir dengan tenang.`),
+E("Perasaan","Saya rindu dia sangat, apa nak buat?",["rindu","rindukan","sangat","dia","teringat","ingat","miss"],
+`Rindu itu normal dan ia datang seperti ombak, naik lalu surut. Bila ia datang:
+• Tarik nafas dalam-dalam, dan sedar 'ini hanya perasaan, ia akan lalu'.
+• Alihkan badan: jalan kaki, mandi, kemas bilik.
+• Hubungi kawan, bukan bekas.
+• Tulis apa yang awak rindu, dan juga perkara yang tidak kena dalam hubungan itu.`,true),
+E("Perasaan","Saya rasa sedih dan menangis setiap hari",["sedih","menangis","nangis","air","mata","hari","murung","tangis"],
+`Menangis adalah cara tubuh melepaskan tekanan, jadi tak perlu ditahan. Ia biasa dalam fasa berduka.
+Namun jika sedih berpanjangan lebih dua minggu, menjejaskan tidur, makan, kerja atau pelajaran, sila berjumpa kaunselor atau doktor. Itu bukan kelemahan, itu langkah menjaga diri.`,true),
+E("Perasaan","Saya rasa marah dan dendam pada bekas",["marah","dendam","benci","geram","sakit","hati","amarah"],
+`Marah adalah sebahagian daripada penyembuhan, terutama bila awak rasa disakiti atau tidak adil. Salurkan dengan selamat:
+• Bersenam atau berjalan laju.
+• Tulis semua kemarahan dalam jurnal (jangan hantar).
+• Elakkan membalas dendam atau memburukkan dia di media sosial, kerana ia hanya menahan awak dalam cerita yang sama.`),
+E("Perasaan","Saya rasa kosong dan tiada motivasi",["kosong","motivasi","malas","semangat","hilang","minat","lesu","hampa","tak","bermaya"],
+`Rasa kosong selepas kehilangan sangat biasa. Mulakan dengan langkah sangat kecil: mandi, makan, keluar ke halaman 10 minit.
+Jangan tunggu rasa bersemangat dahulu, kerana semangat sering datang selepas kita bergerak. Jika kekosongan berpanjangan, bercakap dengan profesional sangat dianjurkan.`),
+E("Perasaan","Saya rasa sunyi dan keseorangan",["sunyi","sepi","keseorangan","sendiri","lonely","seorang","kesepian"],
+`Sunyi selepas putus cinta ialah perasaan yang sangat kuat. Cuba:
+• Hubungi seorang kawan atau ahli keluarga hari ini, walaupun sekadar mesej ringkas.
+• Sertai aktiviti kecil: kelas, kelab, kerja sukarela.
+• Berada di tempat ada orang (kafe, perpustakaan) sudah membantu.
+Sunyi bukan bermakna awak tidak dicintai.`),
+E("Perasaan","Saya rasa tidak cukup baik, salah saya ke?",["cukup","baik","salah","layak","buruk","hodoh","rendah","diri","berharga","kurang","gagal"],
+`Selepas putus, minda mudah menyalahkan diri. Hakikatnya hubungan melibatkan dua orang dan banyak faktor, bukan satu kekurangan pada awak.
+Cuba senaraikan 5 kekuatan awak, dan perhatikan nada suara dalaman. Cakaplah pada diri seperti awak bercakap dengan kawan baik.`),
+E("Perasaan","Saya tak boleh tidur selepas putus cinta",["tidur","insomnia","mimpi","malam","resah","terjaga","penat"],
+`Susah tidur biasa ketika emosi bergelora. Cuba:
+• Waktu tidur dan bangun yang tetap.
+• Kurangkan telefon dan kafein 1-2 jam sebelum tidur.
+• Tulis fikiran yang berlegar di kertas sebelum tidur.
+• Tarik nafas perlahan (tarik 4 saat, hembus 6 saat).
+Jika berlarutan berminggu-minggu, rujuk doktor.`),
+E("Perasaan","Saya takut jatuh cinta lagi dan sukar percaya orang",["takut","trauma","percaya","kepercayaan","serik","jatuh","cinta","lagi","bimbang"],
+`Takut selepas dilukai ialah cara hati melindungi diri. Awak tak perlu terburu-buru.
+Pulihkan kepercayaan pada diri sendiri dahulu: tetapkan had, kenal nilai diri. Bila bersedia, mulakan dengan persahabatan dan lihat konsistensi seseorang dari masa ke masa. Jika trauma terasa kuat, terapi boleh membantu.`),
+E("Perasaan","Saya overthinking tentang bekas dan tak boleh berhenti fikir",["overthinking","fikir","terfikir","fikiran","asyik","berhenti","ligat","ulang"],
+`Fikiran yang berulang cuba mencari jawapan yang tak wujud. Beberapa cara:
+• Beri 'masa risau' 15 minit sehari, lain-lain waktu tangguhkan.
+• Tulis fikiran itu, lalu tanya: 'Apa yang boleh saya buat sekarang?'
+• Alihkan fokus kepada aktiviti yang memerlukan tumpuan (senaman, masak, puzzle).`),
+E("Perasaan","Bagaimana nak terima kenyataan bahawa hubungan ini sudah tamat?",["terima","kenyataan","redha","akur","tamat","berakhir","hakikat","sudah"],
+`Penerimaan datang perlahan. Ia bukan bermakna awak setuju atau tidak lagi sayang, tetapi awak berhenti melawan hakikat.
+• Sebut dengan jelas: 'hubungan ini sudah tamat'.
+• Biarkan rasa sedih muncul tanpa menolak.
+• Fokus pada apa yang masih dalam kawalan awak hari ini.
+Doa dan redha juga memberi ketenangan kepada ramai orang.`),
+E("Penyembuhan","Apakah langkah untuk sembuh daripada patah hati?",["langkah","sembuh","patah","hati","pulih","healing","cara","tips","bagaimana"],
+`Langkah ringkas penyembuhan:
+1. Akui dan benarkan perasaan awak.
+2. Kurangkan hubungan dengan bekas buat sementara.
+3. Jaga asas: tidur, makan, bergerak.
+4. Bina sokongan: kawan, keluarga, kaunselor.
+5. Isi masa dengan perkara bermakna.
+6. Belajar daripada pengalaman, bukan menyalahkan diri.
+7. Bersabar, kemajuan tidak selalu lurus.`,true),
+E("Penyembuhan","Macam mana nak jaga diri semasa bersedih?",["jaga","diri","care","makan","senaman","rutin","kesihatan","rawat"],
+`Jaga diri ketika sedih tak perlu rumit:
+• Makan teratur walaupun sedikit.
+• Bergerak 20-30 minit sehari (jalan kaki pun cukup).
+• Dapatkan cahaya matahari pagi.
+• Hadkan alkohol, rokok dan skrin larut malam.
+• Buat satu perkara kecil yang awak suka setiap hari.`),
+E("Penyembuhan","Perlukah saya berjumpa kaunselor atau pakar?",["kaunselor","kaunseling","psikologi","terapi","profesional","doktor","bantuan","perlu","pakar"],
+`Berjumpa kaunselor sangat dianjurkan jika:
+• Sedih atau cemas berpanjangan lebih dua minggu.
+• Susah tidur, makan, kerja atau belajar.
+• Terfikir untuk mencederakan diri.
+• Terasa tiada sesiapa boleh faham.
+Meminta bantuan ialah tanda kekuatan. Pelajar boleh mulakan dengan kaunselor sekolah, dan orang awam boleh hubungi Talian Kasih 15999.`,true),
+E("Penyembuhan","Apa nak buat dengan barang dan gambar kenangan?",["barang","gambar","kenangan","hadiah","simpan","buang","padam","gambar"],
+`Tiada jawapan betul untuk semua. Pilihan yang ramai rasa membantu:
+• Masukkan dalam kotak dan simpan di tempat jauh dari pandangan buat sementara.
+• Putuskan nanti bila hati lebih tenang: simpan, derma atau buang.
+• Jangan padam semuanya ketika emosi memuncak, supaya tiada penyesalan.`),
+E("Penyembuhan","Macam mana nak maafkan bekas dan diri sendiri?",["maafkan","memaafkan","maaf","ampun","lepaskan","dendam","memaaf"],
+`Memaafkan bukan bermakna membenarkan apa yang berlaku, tetapi melepaskan beban dalam dada awak.
+• Mulakan dengan memaafkan diri sendiri atas pilihan lama yang awak buat dengan apa yang awak tahu masa itu.
+• Tulis surat maaf (atau surat marah) yang tak dihantar.
+• Beri masa. Memaafkan boleh berlaku berperingkat.`),
+E("Penyembuhan","Apa aktiviti yang boleh bantu saya pulih?",["aktiviti","hobi","sibuk","senaman","jalan","solat","baca","buat","bantu","pulih"],
+`Beberapa aktiviti yang membantu:
+• Bersenam, berjalan, berbasikal atau yoga.
+• Hobi lama atau baharu: melukis, memasak, menulis, muzik.
+• Berjumpa kawan atau keluarga.
+• Sukarela membantu orang lain.
+• Ibadah, meditasi atau pernafasan untuk menenangkan hati.
+Pilih satu dahulu dan buat secara konsisten.`),
+E("Move On","Bila masa yang sesuai untuk bercinta semula?",["bila","sesuai","bercinta","semula","bersedia","pengganti","baru","mulakan"],
+`Tanda awak mungkin bersedia:
+• Awak boleh sebut nama bekas tanpa rasa sakit yang tajam.
+• Awak mahu kenal orang baharu, bukan sekadar mengisi kekosongan.
+• Awak sudah belajar sesuatu tentang diri dan keperluan awak.
+Tiada tarikh tertentu. Jangan terburu-buru, dan jangan juga menolak terus.`),
+E("Move On","Apa itu rebound relationship?",["rebound","pengganti","cepat","orang","baru","terburu"],
+`Rebound ialah hubungan baharu yang bermula terlalu cepat selepas putus, biasanya untuk mengisi kekosongan atau melupakan sakit.
+Ia boleh memberi keselesaan sementara tetapi sering tidak adil kepada kedua-dua pihak. Jika awak perasan bertindak begitu, beri masa untuk kenal diri dahulu.`),
+E("Move On","Macam mana nak bina semula keyakinan diri?",["yakin","keyakinan","confidence","harga","berharga","diri","bina","semula"],
+`Bina keyakinan sedikit demi sedikit:
+• Buat dan siapkan matlamat kecil harian.
+• Senaraikan pencapaian dan kekuatan awak.
+• Jaga penampilan dan kesihatan untuk diri sendiri.
+• Kurangkan perbandingan di media sosial.
+• Cuba belajar kemahiran baharu.`),
+E("Move On","Macam mana saya tahu saya sudah move on?",["tahu","sudah","move","on","tanda","berjaya","move on","dah"],
+`Tanda-tanda awak semakin move on:
+• Awak boleh ingat kenangan tanpa terlalu sakit.
+• Awak tidak lagi memeriksa media sosial dia.
+• Awak mula bersemangat dengan masa depan sendiri.
+• Kebahagiaan awak tak lagi bergantung pada dia.
+Tak apa kalau sesekali terkenang, itu normal.`),
+E("Move On","Macam mana nak elak ulang kesilapan yang sama dalam hubungan?",["pelajaran","ulang","kesilapan","pelajari","belajar","corak","elak","masa","depan"],
+`Selepas reda, luangkan masa untuk refleksi:
+• Apa corak yang berulang dalam hubungan awak?
+• Apa keperluan dan nilai yang tak boleh dikompromi?
+• Apa tanda amaran (red flag) yang awak abaikan?
+Tulis dalam jurnal. Tujuannya belajar, bukan menyalahkan diri.`),
+E("Nasihat","Kawan saya putus cinta, macam mana nak tolong dia?",["kawan","rakan","sahabat","tolong","bantu","putus","sokong","teman"],
+`Cara menyokong kawan yang putus cinta:
+• Dengar tanpa menghakimi, dan tak perlu terus bagi nasihat.
+• Elakkan berkata 'lupakan sajalah' atau mengutuk bekasnya.
+• Ajak keluar berjalan, makan atau bersenam.
+• Tanya khabar secara berkala.
+• Jika dia menyebut ingin mencederakan diri, ambil serius dan bantu dia dapatkan pertolongan profesional.`),
+E("Nasihat","Apakah tanda hubungan yang tidak sihat (toxic)?",["toxic","sihat","tanda","red","flag","kawal","kongkong","kasar","manipulasi","hubungan","kontrol"],
+`Antara tanda hubungan tidak sihat:
+• Sentiasa mengawal, mencurigai atau menyekat pergaulan awak.
+• Mengutuk, memalukan atau mengugut.
+• Menyalahkan awak untuk semua perkara.
+• Awak sentiasa takut, bimbang atau terpaksa 'berjalan atas kulit telur'.
+• Ada keganasan fizikal atau emosi.
+Jika awak rasa tidak selamat, cari bantuan segera. Talian Kasih 15999 boleh membantu.`),
+E("Nasihat","Macam mana nak beritahu keluarga saya sudah putus?",["keluarga","ibu","bapa","mak","ayah","beritahu","cerita","malu","umum"],
+`Pilih masa tenang dan orang yang paling awak percaya dahulu. Ringkaskan sahaja: 'Kami sudah putus, saya perlukan sokongan, bukan soalan banyak.'
+Awak tak perlu menceritakan semua butiran. Tetapkan had jika soalan keluarga membuat awak tidak selesa.`),
+E("Nasihat","Saya terpaksa jumpa bekas setiap hari di sekolah atau tempat kerja",["jumpa","sekolah","kelas","kerja","setiap","hari","sekelas","terserempak","berhadapan","pejabat"],
+`Cara menghadapinya:
+• Berlaku sopan dan ringkas, tak perlu berbual panjang.
+• Kurangkan hubungan di media sosial.
+• Duduk berjauhan jika boleh dan alihkan fokus pada tugas.
+• Siapkan 'rutin tenang' selepas bertemu (tarik nafas, berjalan seketika).
+• Beritahu guru, penyelia atau kaunselor jika ia sangat mengganggu.`),
+E("Nasihat","Dia sudah ada orang baru dan saya cemburu",["cemburu","orang","baru","pengganti","dia","ada","kekasih","cepat","dengki"],
+`Cemburu dan sakit hati bila bekas cepat ada orang baru adalah reaksi manusia. Ingat, kadang-kadang itu cara dia lari daripada sakit, dan ia tidak menentukan nilai awak.
+Elakkan membandingkan diri. Fokus pada kemajuan awak sendiri dan kurangkan melihat kehidupan mereka.`),
+E("Nasihat","Apa yang tak patut dibuat selepas putus cinta?",["tak","patut","elak","jangan","kesilapan","mabuk","balas","dendam","hantar","buat"],
+`Cuba elakkan:
+• Menghantar mesej atau menelefon ketika emosi memuncak.
+• Membalas dendam atau memburukkan di media sosial.
+• Terus melompat ke hubungan baharu.
+• Menggunakan alkohol, rokok atau perkara lain untuk lari daripada rasa.
+• Mengasingkan diri sepenuhnya.
+• Membuat keputusan besar dalam hidup ketika masih sangat sedih.`),
+E("Diri Sendiri","Macam mana nak mencintai diri sendiri?",["cinta","diri","sendiri","sayang","self","love","menyayangi","menghargai"],
+`Mencintai diri bermula dengan tindakan kecil:
+• Layan diri dengan baik, seperti awak layan kawan baik.
+• Tetapkan had dan berani berkata 'tidak'.
+• Raikan kejayaan kecil.
+• Jaga tubuh, minda dan jiwa.
+• Kelilingi diri dengan orang yang menghargai awak.`),
+E("Umum","Siapa boleh saya hubungi untuk bantuan segera?",["talian","bantuan","hubungi","kecemasan","nombor","befrienders","segera","krisis","tolong","kaunseling","helpline"],
+`Jika awak perlukan sokongan sekarang:
+• Talian Kasih: 15999
+• Befrienders KL (24 jam): 03-7627 2929
+• Talian HEAL: 15555
+• Kecemasan: 999
+Awak juga boleh menghubungi kaunselor sekolah, doktor, atau seseorang yang awak percaya. Awak tidak keseorangan.`)
+];
+
+const STOP = new Set("yang dan saya aku ni itu tu la lah ke di pada untuk dengan apa ada nak boleh sebab dia ini pun je saje lagi tak dah sudah macam mana bagaimana kita kami awak kau kamu kah pula juga sangat amat betul jer atau dari oleh akan lebih sikit".split(" "));
+const SYN = {mcm:"macam",camne:"macam mana",camna:"macam mana",cmne:"macam mana",x:"tak",xde:"tiada",takde:"tiada",tkde:"tiada",xnak:"tak nak",taknak:"tak nak",dgn:"dengan",yg:"yang",utk:"untuk",sy:"saya",knp:"kenapa",kenape:"kenapa",ape:"apa",bile:"bila",dh:"dah",lg:"lagi",sgt:"sangat",tp:"tapi",bkn:"bukan",bf:"kekasih",gf:"kekasih",boyfriend:"kekasih",girlfriend:"kekasih",pakwe:"kekasih",makwe:"kekasih",awek:"kekasih",couple:"kekasih",partner:"kekasih",pasangan:"kekasih",mantan:"bekas",moveon:"move on",xboleh:"tak boleh",gaduh:"bergaduh",bgmn:"bagaimana",bagaimanakah:"bagaimana"};
+
+/* ============ STORAGE ============ */
+const ls = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let DB = ls.get(KEY,null);
+if(!Array.isArray(DB)||!DB.length){DB=SEED.map((e,i)=>({id:i+1,...e}));ls.set(KEY,DB)}
+let stats = ls.get(STAT,{ans:0,un:0});
+let unans = ls.get(UNK,[]);
+const save=()=>{ls.set(KEY,DB);buildIndex()};
+
+/* ============ SEARCH ENGINE ============ */
+function norm(t){
+  let w=t.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(Boolean).map(x=>SYN[x]||x).join(' ');
+  return w;
+}
+function stem(w){
+  if(w.length<5)return w;
+  let m=w.match(/^(.*?)(kan|kah|lah|nya|an)$/); if(m&&m[1].length>=4)w=m[1];
+  m=w.match(/^(meng|meny|mem|men|ber|ter|per|pen|pem|me|pe|di|ke|se)(.+)$/); if(m&&m[2].length>=4)w=m[2];
+  return w;
+}
+function tokens(t){
+  return norm(t).split(' ').filter(x=>x&&!STOP.has(x)).map(stem).filter(x=>x.length>1||x==='ex');
+}
+let IDX=[],IDF={},IDFMAX=1;
+function buildIndex(){
+  IDX=DB.map(e=>({e,q:new Set(tokens(e.q)),k:new Set(tokens((e.kw||[]).join(' '))),nq:norm(e.q)}));
+  const df={};IDX.forEach(r=>{new Set([...r.q,...r.k]).forEach(t=>df[t]=(df[t]||0)+1)});
+  const N=IDX.length;IDF={};Object.keys(df).forEach(t=>IDF[t]=Math.log((N+1)/(df[t]+.5))+1);
+  IDFMAX=Math.log(N+1)+1;
+}
+function search(text){
+  const qt=[...new Set(tokens(text))];
+  if(!qt.length)return [];
+  const nq=norm(text);
+  const total=qt.reduce((s,t)=>s+(IDF[t]||IDFMAX),0);
+  return IDX.map(r=>{
+    let m=0;
+    qt.forEach(t=>{
+      const w=IDF[t]||IDFMAX;
+      if(r.k.has(t))m+=w;
+      else if(r.q.has(t))m+=w*.85;
+      else if(t.length>=4){
+        for(const x of new Set([...r.k,...r.q])){if(x.length>=4&&(x.startsWith(t)||t.startsWith(x))){m+=w*.5;break}}
+      }
+    });
+    let c=m/total;
+    if(nq===r.nq)c=1;
+    return {e:r.e,c:Math.min(1,c)+0.01/(r.k.size+1)};
+  }).sort((a,b)=>b.c-a.c);
+}
+const CRISIS=/bunuh diri|nak mati|mahu mati|tamatkan hidup|akhiri hidup|mengakhiri hidup|cederakan diri|mencederakan diri|tak nak hidup|tak mahu hidup|lebih baik mati|kelar tangan|potong nadi|hiris tangan/;
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtA=s=>esc(s).replace(/\n/g,'<br>');
+const timeNow=()=>new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'});
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
+const cats=()=>{const m={};DB.forEach(e=>m[e.cat]=(m[e.cat]||0)+1);return m};
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+const AFF=["Hari ini, cukup dengan satu langkah kecil.","Awak lebih kuat daripada yang awak sangka.","Hati yang pernah patah masih mampu mencintai dengan lebih bijak.","Tak apa untuk rehat. Rehat juga sebahagian daripada sembuh.","Kamu layak disayangi, terutama oleh diri sendiri."];
+
+/* ============ NAVIGATION ============ */
+const TITLES={home:'Laman Utama',chat:'Sembang MarGGPT',topics:'Topik Soalan',admin:'Pangkalan Data',help:'Talian Bantuan'};
+function go(v){
+  $$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));
+  $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  $('#pageTitle').textContent=TITLES[v];
+  $('#sidebar').classList.remove('open');$('#overlay').classList.remove('show');
+  $('#content').scrollTop=0;
+  if(v==='home')renderHome();if(v==='topics')renderTopics();if(v==='admin')renderAdmin();
+  if(v==='chat')setTimeout(()=>$('#chatInput').focus(),100);
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.view)});
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+  const a=e.target.closest('[data-ask]');if(a){const q=a.dataset.ask;go('chat');ask(q);return}
+  const c=e.target.closest('[data-cat]');if(c){go('topics');showCat(c.dataset.cat)}
+});
+$('#burger').onclick=()=>{$('#sidebar').classList.add('open');$('#overlay').classList.add('show')};
+$('#overlay').onclick=()=>{$('#sidebar').classList.remove('open');$('#overlay').classList.remove('show')};
+
+/* ============ HOME ============ */
+function renderHome(){
+  const cs=cats();
+  $('#sTotal').textContent=DB.length;$('#sCats').textContent=Object.keys(cs).length;
+  $('#sAns').textContent=stats.ans;$('#sUn').textContent=unans.length;
+  let pop=DB.filter(e=>e.pop);if(pop.length<4)pop=DB.slice(0,6);
+  $('#popular').innerHTML=pop.slice(0,6).map(e=>`<button class="q-item" data-ask="${esc(e.q)}"><span>${esc(e.q)}</span>${ARROW}</button>`).join('');
+  $('#homeCats').innerHTML=Object.entries(cs).map(([c,n])=>`<button class="chip" data-cat="${esc(c)}">${esc(c)}<b>${n}</b></button>`).join('');
+  $('#affirm').textContent='"'+AFF[new Date().getDate()%AFF.length]+'"';
+}
+
+/* ============ CHAT ============ */
+const msgs=$('#msgs');
+function scrollDown(){msgs.scrollTop=msgs.scrollHeight}
+const BOT_AV='<div class="avatar" style="width:36px;height:36px"><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M12 21s-8-5-8-11a4.500 4.500 0 0 1 8-2.800A4.500 4.500 0 0 1 20 10c0 6-8 11-8 11Z"/></svg></div>';
+function addUser(t){
+  const d=document.createElement('div');d.className='msg user';
+  d.innerHTML=`<div class="bubble">${esc(t)}</div>`;msgs.appendChild(d);scrollDown();
+}
+function addBot(html,cls=''){
+  const d=document.createElement('div');d.className='msg bot';
+  d.innerHTML=BOT_AV+`<div class="bubble ${cls}">${html}</div>`;msgs.appendChild(d);scrollDown();
+}
+function chipsHTML(list){return `<div class="rel">${list.map(e=>`<button class="chip" data-ask="${esc(e.q)}">${esc(e.q)}</button>`).join('')}</div>`}
+function typing(on){
+  let t=$('#typingRow');
+  if(on&&!t){t=document.createElement('div');t.id='typingRow';t.className='msg bot';t.innerHTML=BOT_AV+'<div class="bubble"><div class="typing"><i></i><i></i><i></i></div></div>';msgs.appendChild(t);scrollDown()}
+  if(!on&&t)t.remove();
+}
+function ask(text){
+  text=text.trim();if(!text)return;
+  addUser(text);typing(true);
+  setTimeout(()=>{typing(false);respond(text)},450+Math.random()*350);
+}
+function respond(text){
+  const nt=norm(text);
+  if(CRISIS.test(nt)){
+    addBot(`<b>Saya risau tentang awak, dan saya gembira awak berkongsi.</b><br>Awak tidak keseorangan dan awak layak mendapat bantuan sekarang. Sila hubungi:<br>• Befrienders KL (24 jam): <b>03-7627 2929</b><br>• Talian Kasih: <b>15999</b><br>• Talian HEAL: <b>15555</b><br>• Jika dalam bahaya segera: <b>999</b><br><br>Jika boleh, berada bersama seseorang yang awak percaya sekarang, dan jauhkan diri daripada apa-apa yang boleh mencederakan.`,'crisis');
+    return;
+  }
+  const res=search(text),best=res[0];
+  if(best&&best.c>=0.4){
+    const rel=res.slice(1,4).filter(r=>r.c>=0.3).map(r=>r.e);
+    addBot(`<div class="meta"><span class="tag">${esc(best.e.cat)}</span><span>${timeNow()}</span></div>${fmtA(best.e.a)}<div class="src">Sumber: Pangkalan Data MarGGPT #${best.e.id}</div>${rel.length?`<div class="meta" style="margin:12px 0 0">Soalan berkaitan:</div>`+chipsHTML(rel):''}`);
+    stats.ans++;ls.set(STAT,stats);return;
+  }
+  const sug=res.filter(r=>r.c>=0.15).slice(0,3).map(r=>r.e);
+  logUnans(text);
+  if(sug.length){
+    addBot(`Saya tak jumpa jawapan yang tepat untuk soalan itu dalam pangkalan data. Mungkin awak maksudkan salah satu daripada ini?${chipsHTML(sug)}`);
+  }else{
+    const some=Object.keys(cats()).slice(0,6).map(c=>`<button class="chip" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+    addBot(`Maaf, maklumat ini <b>tiada dalam pangkalan data MarGGPT</b>. Saya hanya boleh menjawab perkara yang ada dalam sistem. Soalan awak telah dicatat untuk admin tambah kemudian.<div class="rel">${some}</div>`);
+  }
+}
+function logUnans(t){
+  stats.un++;ls.set(STAT,stats);
+  if(!unans.some(u=>u.text.toLowerCase()===t.toLowerCase())){unans.unshift({text:t,time:Date.now()});unans=unans.slice(0,50);ls.set(UNK,unans)}
+}
+function startChat(){
+  msgs.innerHTML='';
+  addBot(`Hai, saya <b>MarGGPT</b>. Saya boleh bantu dengan soalan tentang perasaan, putus cinta dan cara untuk sembuh.<br>Semua jawapan saya datang daripada pangkalan data, jadi kalau saya tak tahu, saya akan beritahu. Apa yang awak rasa hari ini?`);
+  const picks=DB.filter(e=>e.pop).slice(0,6);
+  $('#startChips').innerHTML=picks.map(e=>`<button class="chip" data-ask="${esc(e.q)}">${esc(e.q)}</button>`).join('');
+}
+$('#chatForm').addEventListener('submit',e=>{e.preventDefault();const i=$('#chatInput');const v=i.value;i.value='';ask(v)});
+$('#clearChat').onclick=startChat;
+
+/* ============ TOPICS ============ */
+function renderTopics(){
+  $('#catGrid').innerHTML=Object.entries(cats()).map(([c,n])=>`<button class="cat-card" data-pick="${esc(c)}"><b>${esc(c)}</b><span>${n} soalan</span></button>`).join('');
+  $$('#catGrid .cat-card').forEach(b=>b.onclick=()=>showCat(b.dataset.pick));
+}
+function showCat(c){
+  renderTopics();
+  $$('#catGrid .cat-card').forEach(b=>b.classList.toggle('active',b.dataset.pick===c));
+  $('#catQs').style.display='block';$('#catQsTitle').textContent=c;
+  $('#catQsList').innerHTML=DB.filter(e=>e.cat===c).map(e=>`<button class="q-item" data-ask="${esc(e.q)}"><span>${esc(e.q)}</span>${ARROW}</button>`).join('');
+}
+
+/* ============ ADMIN ============ */
+function renderAdmin(){
+  const s=$('#adminSearch').value.trim().toLowerCase();
+  const rows=DB.filter(e=>!s||(e.q+e.cat+e.a+(e.kw||[]).join(' ')).toLowerCase().includes(s));
+  $('#adminBody').innerHTML=rows.length?rows.map(e=>`<tr><td><span class="tag">${esc(e.cat)}</span></td><td>${esc(e.q)}</td><td style="color:var(--muted);font-size:13px">${esc((e.kw||[]).slice(0,6).join(', '))}</td><td><div class="act"><button data-edit="${e.id}">Edit</button><button class="del" data-del="${e.id}">Padam</button></div></td></tr>`).join(''):`<tr><td colspan="4" class="empty">Tiada rekod ditemui.</td></tr>`;
+  const box=$('#unansBox');box.style.display=unans.length?'block':'none';
+  $('#unansList').innerHTML=unans.map((u,i)=>`<div class="row"><span>${esc(u.text)}</span><div class="act"><button data-fill="${i}">Jawab</button><button class="del" data-rm="${i}">Buang</button></div></div>`).join('');
+}
+$('#adminSearch').oninput=renderAdmin;
+let editId=null;
+function openDlg(e,prefillQ){
+  editId=e?e.id:null;
+  $('#dlgTitle').textContent=e?'Edit Soalan':'Tambah Soalan';
+  $('#fCat').value=e?e.cat:'';$('#fQ').value=e?e.q:(prefillQ||'');
+  $('#fKw').value=e?(e.kw||[]).join(', '):'';$('#fA').value=e?e.a:'';
+  $('#catList').innerHTML=Object.keys(cats()).map(c=>`<option value="${esc(c)}">`).join('');
+  $('#dlg').showModal();
+}
+$('#addBtn').onclick=()=>openDlg();
+$('#dlgCancel').onclick=()=>$('#dlg').close();
+$('#dlgForm').addEventListener('submit',ev=>{
+  const o={cat:$('#fCat').value.trim(),q:$('#fQ').value.trim(),kw:$('#fKw').value.split(',').map(x=>x.trim()).filter(Boolean),a:$('#fA').value.trim()};
+  if(!o.cat||!o.q||!o.a)return;
+  if(editId){const i=DB.findIndex(x=>x.id===editId);DB[i]={...DB[i],...o}}
+  else{
+    DB.push({id:Math.max(0,...DB.map(x=>x.id))+1,pop:false,...o});
+    unans=unans.filter(u=>u.text.toLowerCase()!==o.q.toLowerCase());ls.set(UNK,unans);
+  }
+  save();renderAdmin();toast('Disimpan');
+});
+$('#adminBody').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-edit]'),dl=e.target.closest('[data-del]');
+  if(ed)openDlg(DB.find(x=>x.id==ed.dataset.edit));
+  if(dl&&confirm('Padam soalan ini?')){DB=DB.filter(x=>x.id!=dl.dataset.del);save();renderAdmin();toast('Dipadam')}
+});
+$('#unansList').addEventListener('click',e=>{
+  const f=e.target.closest('[data-fill]'),r=e.target.closest('[data-rm]');
+  if(f)openDlg(null,unans[f.dataset.fill].text);
+  if(r){unans.splice(r.dataset.rm,1);ls.set(UNK,unans);renderAdmin()}
+});
+$('#exportBtn').onclick=()=>{
+  const b=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='marggpt-pangkalan-data.json';a.click();URL.revokeObjectURL(a.href);
+};
+$('#importBtn').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const d=JSON.parse(await f.text());
+    if(!Array.isArray(d)||!d.every(x=>x.q&&x.a&&x.cat))throw 0;
+    DB=d.map((x,i)=>({id:i+1,cat:String(x.cat),q:String(x.q),a:String(x.a),kw:Array.isArray(x.kw)?x.kw.map(String):[],pop:!!x.pop}));
+    save();renderAdmin();toast('Import berjaya ('+DB.length+' soalan)');
+  }catch(err){toast('Fail tidak sah')}
+  e.target.value='';
+};
+$('#resetBtn').onclick=()=>{
+  if(!confirm('Set semula semua data kepada asal? Perubahan anda akan hilang.'))return;
+  DB=SEED.map((e,i)=>({id:i+1,...e}));stats={ans:0,un:0};unans=[];ls.set(STAT,stats);ls.set(UNK,unans);save();renderAdmin();toast('Data disetkan semula');
+};
+
+/* ============ INIT ============ */
+$('#yr').textContent=new Date().getFullYear();
+buildIndex();startChat();renderHome();
+</script>
+</body>
+</html>
